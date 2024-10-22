@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "project1": {
+      "address": "0x12345...789",
+      "success_url": "https://project1.com/success",
+      "fail_url": "https://project1.com/fail"
+    },
+    "project2": {
+      "address": "0x98765...321",
+      "success_url": "https://project2.com/success",
+      "fail_url": "https://project2.com/fail"
+    }
+  }
+}

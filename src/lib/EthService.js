@@ -1,9 +1,9 @@
-import { ethers } from "ethers";
+import { ethers } from 'ethers';
 
-class WalletService {
+class EthService {
     constructor() {
         this.networks = {
-            Ethereum: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+            // Ethereum: "https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID",
             Polygon: "https://polygon-rpc.com",
             ArbitrumOne: "https://arb1.arbitrum.io/rpc",
             AvalancheCChain: "https://api.avax.network/ext/bc/C/rpc",
@@ -46,7 +46,8 @@ class WalletService {
         return walletWithProvider;
     }
 
-    async sendUsdt(networkName, senderPrivateKey, recipientAddress, amount) {
+
+    async sendUsdt(networkName, senderPrivateKey, recipientAddress, amount = null) {
         const provider = this.getProvider(networkName);
         const usdtContractAddress = this.usdtContractAddress[networkName];
 
@@ -67,14 +68,34 @@ class WalletService {
         const formattedBalance = ethers.formatUnits(senderUSDTBalance, 6); // Преобразуем в USDT формат
         console.log(`Баланс отправителя USDT: ${formattedBalance} USDT`);
 
-        // Проверяем, достаточно ли средств для отправки
-        if (parseFloat(formattedBalance) < parseFloat(amount)) {
+        // Если amount не указан, отправляем весь доступный баланс USDT
+        let usdtToSend = amount ? ethers.parseUnits(amount, 6) : senderUSDTBalance;
+
+        // Преобразуем в BigInt для правильной работы
+        usdtToSend = BigInt(usdtToSend);
+        const senderUSDTBalanceBigInt = BigInt(senderUSDTBalance);
+
+        // Получаем данные о стоимости газа
+        const feeData = await provider.getFeeData();
+        const gasPrice = feeData.gasPrice; // В новой версии это BigInt
+        const gasLimit = 60000n; // Граничное значение газа для токен-транзакций
+        const gasCost = gasPrice * gasLimit; // Стоимость газа
+
+        // Проверяем баланс MATIC (или другой нативной валюты) для оплаты газа
+        const senderNativeBalance = await provider.getBalance(wallet.address);
+
+        if (BigInt(senderNativeBalance) < gasCost) {
+            throw new Error("Недостаточно средств для оплаты газа.");
+        }
+
+        // Проверяем, достаточно ли USDT для отправки
+        if (usdtToSend == 0 || usdtToSend > senderUSDTBalanceBigInt) {
             throw new Error("Недостаточно USDT для отправки.");
         }
 
         try {
             // Отправляем USDT
-            const tx = await usdtContract.transfer(recipientAddress, ethers.parseUnits(amount, 6));
+            const tx = await usdtContract.transfer(recipientAddress, usdtToSend);
             console.log("Транзакция отправлена, хэш:", tx.hash);
 
             // Ожидание подтверждения
@@ -86,9 +107,22 @@ class WalletService {
             console.error("Ошибка при отправке USDT:", error);
             throw error;
         }
+    }
 
-        return tx.hash;
+
+    async getFee(networkName) {
+        const provider = this.getProvider(networkName);
+
+        // Получаем данные о комиссиях
+        const feeData = await provider.getFeeData();
+
+        // Преобразуем данные в BigInt для дальнейших вычислений
+        return {
+            gasPrice: feeData.gasPrice, // Стоимость газа
+            maxFeePerGas: feeData.maxFeePerGas || feeData.gasPrice, // Максимальная комиссия за газ
+            maxPriorityFeePerGas: feeData.maxPriorityFeePerGas || 0n, // Максимальный приоритет
+        };
     }
 }
 
-export default WalletService;
+export default EthService;

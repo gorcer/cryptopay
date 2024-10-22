@@ -1,7 +1,7 @@
 {
   "name": "cryptopay",
   "version": "1.0.0",
-  "description": "",
+  "description": "Example of getting waller address and private key and send transfer in a cryptocurrency network.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -9,7 +9,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.4",
+    "express": "^4.21.1",
+    "mysql": "^2.18.1",
+    "node-cron": "^3.0.3",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.20"
   },
-  "type": "module"
+  "type": "module",
+  "directories": {
+    "lib": "lib"
+  },
+  "keywords": []
 }

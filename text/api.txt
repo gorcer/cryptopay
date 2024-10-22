@@ -1,0 +1,17 @@
+// getFee(network)
+// getWallet(network, project, user_id)
+// -- create invoice(walletAddress, key, project, network, amount=0)
+
+// checkIncome
+// - checking balance in wallet
+// - fill invoice.amount
+// - transfer to all to project.address
+// - send accept to project.success_url
+
+// after 30 minutes
+// - send fail to project.fail_url
+
+
+
+// cron - check invoices balance
+

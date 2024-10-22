@@ -1,7 +1,7 @@
-import WalletService from './lib/WalletService.js';
+import EthService from './lib/EthService.js';
 
 async function main() {
-    const walletService = new WalletService();
+    const walletService = new EthService();
 
     // Например, создаем кошелек для сети Polygon
     const networkName = 'TON';
